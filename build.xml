@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="webcache" basedir="." default="deploy">
+
+    <property file="build.properties" />
+    <property environment="env" />
+    <property name="tomcat.home" value="${env.TOMCAT_HOME}" />
+
+    <target name="clean">
+        <delete dir="${deploy.dir}"/>
+        <antcall target="mvn">
+            <param name="dir" value="${basedir}" />
+            <param name="goal" value="clean" />
+        </antcall>
+    </target>
+
+    <target name="deploy">
+
+        <antcall target="mvn">
+            <param name="dir" value="${basedir}" />
+            <param name="goal" value="install" />
+        </antcall>
+
+        <mkdir dir="deploy"/>
+        <antcall target="deployFiltered">
+            <param name="src" value="target/webcache-${project.version}.war"/>
+            <param name="dest" value="${deploy.dir}"/>
+            <param name="tmpdir" value="deploy/webcache"/>
+            <param name="webappName" value="webcache"/>
+        </antcall>
+    </target>
+
+    <target name="deployFiltered">
+        <unjar src="${src}" dest="${tmpdir}"/>
+        <copy todir="${dest}">
+            <fileset dir="${tmpdir}"/>
+            <filterset>
+                <filter token="webappName" value="${webappName}"/>
+                <filtersfile file="build.properties"/>
+            </filterset>
+        </copy>
+    </target>
+
+    <target name="mvn">
+        <exec failonerror="true" executable="mvn" dir="${dir}" vmlauncher="true" resolveexecutable="true" searchpath="true">
+            <arg value="${goal}" />
+        </exec>
+    </target>
+
+</project>
