@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+    <bean id="cacheWrapper" class="net.unicon.webcache.CacheWrapper" singleton="true">
+        <property name="cacheName"><value>webCache</value></property>
+        <property name="cacheConfiguration"><ref bean="cacheConfiguration"/></property>
+        <property name="evictionPolicy"><value>LRU</value></property>
+    </bean>
+
+    <bean id="cacheConfiguration" class="net.sf.ehcache.config.CacheConfiguration" singleton="true">
+        <property name="name"><value>webCache</value></property>
+        <property name="maxElementsInMemory"><value>1000</value></property>
+        <property name="timeToIdleSeconds"><value>43200</value></property>
+        <property name="timeToLiveSeconds"><value>43200</value></property>
+        <!--property name="diskExpiryThreadIntervalSeconds"><value>43200</value></property-->
+        <property name="overflowToDisk"><value>true</value></property>
+        <property name="diskPersistent"><value>true</value></property>
+        <property name="maxElementsOnDisk"><value>0</value></property>
+    </bean>
+
+    <bean id="cacheUtility" class="net.unicon.webcache.CacheUtility">
+        <property name="persistentFileCachePath"><value>/tmp</value></property>
+        <property name="cacheWrapper"><ref bean="cacheWrapper"/></property>
+    </bean>
+
+    <bean id="WebcacheController" class="net.unicon.webcache.WebcacheController">
+        <property name="cacheUtility"><ref bean="cacheUtility"/></property>
+    </bean>
+
+    <bean id="ResetCacheController" class="net.unicon.webcache.ResetCacheController">
+        <property name="cacheUtility"><ref bean="cacheUtility"/></property>
+    </bean>
+
+    <bean id="CacheStatisticsController" class="net.unicon.webcache.CacheStatisticsController">
+        <property name="cacheUtility"><ref bean="cacheUtility"/></property>
+    </bean>
+
+    <bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="mappings">
+            <props>
+                <prop key="/cache/*">WebcacheController</prop>
+                <prop key="/reset/*">ResetCacheController</prop>
+                <prop key="/stats/*">CacheStatisticsController</prop>
+            </props>
+        </property>
+    </bean>
+
+</beans>
